@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aung Pyae — CAD/CAM Engineer & Blender Animator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0e;
+    --bg2: #0d1117;
+    --bg3: #111722;
+    --surface: #161d2b;
+    --surface2: #1e2a3d;
+    --accent: #2b7fff;
+    --accent2: #00d4ff;
+    --accent3: #7c3aed;
+    --text: #e8edf5;
+    --text2: #8a9bb5;
+    --text3: #4d5e78;
+    --border: rgba(43, 127, 255, 0.15);
+    --border2: rgba(43, 127, 255, 0.08);
+    --glow: rgba(43, 127, 255, 0.25);
+    --glow2: rgba(0, 212, 255, 0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transition: transform 0.1s ease, background 0.2s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(43,127,255,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transition: transform 0.15s ease, width 0.2s, height 0.2s, border-color 0.2s;
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(43,127,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,127,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* NOISE OVERLAY */
+  .noise {
+    position: fixed; inset: 0; z-index: 1;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8,10,14,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo span {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    display: inline-block;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 8px var(--accent); }
+    50% { box-shadow: 0 0 20px var(--accent), 0 0 40px var(--glow); }
+  }
+
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text2); text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 1px; background: var(--accent);
+    transform: scaleX(0); transition: transform 0.2s;
+    transform-origin: left;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  .nav-cta {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 10px 24px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--accent); transform: translateX(-100%);
+    transition: transform 0.25s;
+  }
+  .nav-cta:hover { color: var(--bg); }
+  .nav-cta:hover::before { transform: translateX(0); }
+  .nav-cta span { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 120px 60px 80px;
+    position: relative; z-index: 2;
+    overflow: hidden;
+  }
+
+  .hero-left { flex: 1; }
+  .hero-right { flex: 0 0 480px; position: relative; }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 32px;
+    border: 1px solid rgba(43,127,255,0.3);
+    padding: 8px 16px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero-tag::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -3px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+  h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  h1 .line3 {
+    display: block;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 0.72em;
+    color: var(--text2);
+    -webkit-text-fill-color: var(--text2);
+    letter-spacing: -1px;
+  }
+
+  .hero-desc {
+    font-size: 14px; line-height: 1.8;
+    color: var(--text2); max-width: 520px;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s 0.2s ease both;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .hero-btns {
+    display: flex; gap: 16px;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    padding: 16px 36px; background: var(--accent);
+    color: #fff; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    text-decoration: none; border: none;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); }
+
+  .btn-secondary {
+    padding: 16px 36px;
+    color: var(--text2); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    text-decoration: none; border: 1px solid var(--border);
+    transition: all 0.3s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 64px;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+  .hero-stat { }
+  .hero-stat .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px; font-weight: 800;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--text) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-stat .label {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3); margin-top: 4px;
+  }
+
+  /* VIEWPORT 3D WIDGET */
+  .viewport-widget {
+    width: 100%; aspect-ratio: 1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+  .viewport-widget canvas {
+    position: absolute; inset: 0; width: 100% !important; height: 100% !important;
+  }
+  .viewport-label {
+    position: absolute; top: 12px; left: 12px;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); z-index: 5;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .viewport-label::before {
+    content: ''; width: 5px; height: 5px; background: var(--accent); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  .viewport-corners::before,
+  .viewport-corners::after {
+    content: ''; position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--accent);
+    border-style: solid;
+    z-index: 5;
+  }
+  .viewport-corners::before { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+  .viewport-corners::after { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 2; }
+
+  .section-label {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before {
+    content: ''; width: 40px; height: 1px; background: var(--accent);
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 800; letter-spacing: -2px;
+    margin-bottom: 16px; line-height: 1;
+  }
+
+  /* ABOUT */
+  .about {
+    padding: 120px 60px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+    background: var(--bg2);
+    border-top: 1px solid var(--border2);
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .about-text .sub {
+    color: var(--text2); line-height: 1.8; font-size: 13px; margin-bottom: 32px;
+  }
+
+  .about-specs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; border: 1px solid var(--border2);
+  }
+  .spec-item {
+    padding: 20px 24px;
+    border: 1px solid var(--border2);
+    background: var(--bg);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .spec-item:hover { background: var(--surface); border-color: var(--border); }
+  .spec-key {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 6px;
+  }
+  .spec-val {
+    font-size: 13px; color: var(--accent2); font-weight: 500;
+  }
+
+  /* SKILLS */
+  .skills-section {
+    padding: 120px 60px;
+  }
+
+  .skills-header { margin-bottom: 64px; }
+
+  .skills-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  }
+
+  .skill-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    padding: 40px 36px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+    group: true;
+  }
+  .skill-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .skill-card:hover { background: var(--surface); border-color: var(--border); transform: translateY(-4px); }
+  .skill-card:hover::before { transform: scaleX(1); }
+
+  .skill-icon {
+    font-size: 32px; margin-bottom: 20px;
+    filter: grayscale(0.3);
+  }
+  .skill-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .skill-desc { font-size: 12px; color: var(--text2); line-height: 1.7; margin-bottom: 24px; }
+
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 10px; border: 1px solid var(--border);
+    color: var(--text3); transition: all 0.2s;
+  }
+  .tag:hover { border-color: var(--accent); color: var(--accent); }
+
+  .skill-bar-row { margin-top: 24px; }
+  .skill-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text3); margin-bottom: 8px;
+  }
+  .skill-bar-track {
+    height: 2px; background: var(--bg3); position: relative;
+  }
+  .skill-bar-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    position: relative;
+    animation: barFill 1.5s ease both;
+    animation-play-state: paused;
+  }
+  .skill-bar-fill.animated { animation-play-state: running; }
+  @keyframes barFill {
+    from { width: 0 !important; }
+  }
+
+  /* PROJECTS */
+  .projects-section {
+    padding: 120px 60px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border2);
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; margin-top: 64px;
+  }
+
+  .project-card {
+    position: relative; overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    aspect-ratio: 16/10;
+    transition: all 0.4s;
+    cursor: none;
+  }
+  .project-card:hover { border-color: var(--border); }
+  .project-card:hover .project-overlay { opacity: 1; }
+  .project-card:hover .project-visual { transform: scale(1.05); }
+
+  .project-visual {
+    width: 100%; height: 100%;
+    transition: transform 0.4s;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .project-overlay {
+    position: absolute; inset: 0;
+    background: rgba(8,10,14,0.85);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 32px; opacity: 0;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(4px);
+  }
+
+  .project-cat {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .project-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700; margin-bottom: 10px;
+  }
+  .project-about { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  .project-card-wide { grid-column: span 2; }
+
+  /* SVG project visuals */
+  .cad-vis { background: var(--bg3); }
+  .blend-vis { background: #0a0a1a; }
+  .cam-vis { background: #0a1410; }
+  .motion-vis { background: #0d0a1a; }
+  .combined-vis { background: #0a0d14; }
+
+  /* SERVICES */
+  .services-section { padding: 120px 60px; }
+  .services-list { margin-top: 64px; }
+  .service-row {
+    display: grid; grid-template-columns: 80px 1fr 1fr auto;
+    align-items: center; gap: 40px;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border2);
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .service-row::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(43,127,255,0.03) 0%, transparent 100%);
+    transform: translateX(-100%); transition: transform 0.3s;
+  }
+  .service-row:hover::before { transform: translateX(0); }
+  .service-row:hover .service-num { color: var(--accent); }
+
+  .service-num {
+    font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800;
+    color: var(--bg3); transition: color 0.2s;
+    line-height: 1;
+  }
+  .service-name {
+    font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+  }
+  .service-desc { font-size: 12px; color: var(--text2); line-height: 1.7; }
+  .service-arr {
+    font-size: 24px; color: var(--text3); transition: all 0.2s;
+  }
+  .service-row:hover .service-arr { color: var(--accent); transform: translateX(8px); }
+
+  /* CONTACT */
+  .contact-section {
+    padding: 120px 60px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border2);
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: start;
+  }
+
+  .contact-form { }
+  .form-row { margin-bottom: 20px; }
+  .form-row label {
+    display: block; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 8px;
+  }
+  .form-row input, .form-row textarea {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text); font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; padding: 14px 18px;
+    outline: none; transition: border-color 0.2s;
+    resize: none;
+  }
+  .form-row input:focus, .form-row textarea:focus { border-color: var(--accent); }
+
+  .form-submit {
+    width: 100%; padding: 18px;
+    background: var(--accent); border: none; color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    cursor: none; transition: background 0.2s;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+    margin-top: 8px;
+  }
+  .form-submit:hover { background: var(--accent2); }
+
+  .contact-info { }
+  .contact-info h2 { margin-bottom: 20px; }
+  .contact-info p {
+    font-size: 13px; color: var(--text2); line-height: 1.8; margin-bottom: 48px;
+  }
+  .contact-links { display: flex; flex-direction: column; gap: 16px; }
+  .contact-link {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 24px;
+    border: 1px solid var(--border2);
+    background: var(--bg);
+    text-decoration: none; color: var(--text);
+    transition: all 0.2s;
+  }
+  .contact-link:hover { border-color: var(--accent); background: var(--surface); }
+  .contact-link .cl-icon { font-size: 20px; }
+  .contact-link .cl-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3);
+  }
+  .contact-link .cl-val { font-size: 13px; color: var(--accent2); margin-top: 2px; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 60px;
+    border-top: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; z-index: 2;
+  }
+  .footer-copy { font-size: 11px; color: var(--text3); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-size: 11px; letter-spacing: 1px;
+    color: var(--text3); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* UTILITIES */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    nav { padding: 20px 32px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 32px 80px; flex-direction: column; gap: 60px; }
+    .hero-right { flex: none; width: 100%; max-width: 400px; }
+    .about, .contact-section { padding: 80px 32px; grid-template-columns: 1fr; gap: 48px; }
+    .skills-section, .projects-section, .services-section { padding: 80px 32px; }
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .project-card-wide { grid-column: span 1; }
+    .service-row { grid-template-columns: 60px 1fr; }
+    .service-desc, .service-arr { display: none; }
+    footer { padding: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="grid-bg"></div>
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo"><span></span>AUNG PYAE</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta"><span>Hire Me</span></a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="hero-tag">Available for Projects</div>
+    <h1>
+      AUNG<br>
+      <span class="line2">PYAE</span>
+      <span class="line3">Engineer & Animator</span>
+    </h1>
+    <p class="hero-desc">
+      // CAD/CAM Engineer specializing in precision mechanical design,<br>
+      // CNC manufacturing, and Blender 3D animation & visualization.
+    </p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn-primary">View Projects</a>
+      <a href="#contact" class="btn-secondary">Let's Talk</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">5+</div>
+        <div class="label">Years Exp.</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">40+</div>
+        <div class="label">Projects</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">3D</div>
+        <div class="label">Blender Pro</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="viewport-widget viewport-corners">
+      <div class="viewport-label">VIEWPORT.3D // LIVE</div>
+      <canvas id="heroCanvas"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-left reveal">
+    <div class="section-label">01 // About</div>
+    <h2>Precision<br>meets<br><em style="font-family:'Instrument Serif',serif;color:var(--accent2);">Creativity</em></h2>
+    <p class="about-text sub" style="margin-top:24px">
+      I am a CAD/CAM engineer and Blender animator who bridges the gap between technical precision and creative visualization. With expertise in SolidWorks, AutoCAD, Fusion 360, and advanced Blender workflows, I design, engineer, and bring mechanical systems to life.
+    </p>
+    <p class="about-text sub">
+      From CNC-ready technical drawings to photorealistic 3D animations, I deliver end-to-end solutions that communicate complex engineering concepts with clarity and impact.
+    </p>
+  </div>
+  <div class="about-right reveal">
+    <div class="about-specs">
+      <div class="spec-item">
+        <div class="spec-key">Discipline</div>
+        <div class="spec-val">Mechanical Engineering</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Focus</div>
+        <div class="spec-val">CAD/CAM Design</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Tool</div>
+        <div class="spec-val">Blender 4.x</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Rendering</div>
+        <div class="spec-val">Cycles / EEVEE</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">CNC</div>
+        <div class="spec-val">3/5-Axis Machining</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Base</div>
+        <div class="spec-val">Myanmar 🇲🇲</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills-section" id="skills">
+  <div class="skills-header reveal">
+    <div class="section-label">02 // Skills</div>
+    <h2>Core<br>Competencies</h2>
+  </div>
+  <div class="skills-grid">
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">⚙️</div>
+      <div class="skill-name">CAD Design</div>
+      <div class="skill-desc">Parametric modeling, assemblies, technical drawings, and GD&T for precision engineering applications.</div>
+      <div class="skill-tags">
+        <span class="tag">SolidWorks</span>
+        <span class="tag">AutoCAD</span>
+        <span class="tag">Fusion 360</span>
+        <span class="tag">CATIA</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>95%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:95%"></div></div>
+      </div>
+    </div>
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">🔩</div>
+      <div class="skill-name">CAM & CNC</div>
+      <div class="skill-desc">G-code programming, toolpath optimization, and CNC setup for 3-axis, 4-axis, and 5-axis machining.</div>
+      <div class="skill-tags">
+        <span class="tag">HSMWorks</span>
+        <span class="tag">Mastercam</span>
+        <span class="tag">G-Code</span>
+        <span class="tag">Toolpath</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>90%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:90%"></div></div>
+      </div>
+    </div>
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">🎨</div>
+      <div class="skill-name">Blender 3D</div>
+      <div class="skill-desc">Hard-surface modeling, rigging, physics simulation, and product visualization with photorealistic renders.</div>
+      <div class="skill-tags">
+        <span class="tag">Modeling</span>
+        <span class="tag">Rigging</span>
+        <span class="tag">Cycles</span>
+        <span class="tag">Shader Nodes</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>92%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:92%"></div></div>
+      </div>
+    </div>
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">🎬</div>
+      <div class="skill-name">3D Animation</div>
+      <div class="skill-desc">Mechanical animation, exploded views, product showcases, and cinematic walkthroughs for engineering presentations.</div>
+      <div class="skill-tags">
+        <span class="tag">NLA Editor</span>
+        <span class="tag">Motion Paths</span>
+        <span class="tag">Constraints</span>
+        <span class="tag">VSE</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>88%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:88%"></div></div>
+      </div>
+    </div>
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">📐</div>
+      <div class="skill-name">FEA / Simulation</div>
+      <div class="skill-desc">Finite element analysis, stress simulation, thermal analysis, and design validation for mechanical components.</div>
+      <div class="skill-tags">
+        <span class="tag">ANSYS</span>
+        <span class="tag">SolidWorks Sim</span>
+        <span class="tag">FEA</span>
+        <span class="tag">CFD</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>80%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <div class="skill-card reveal">
+      <div class="skill-icon">✨</div>
+      <div class="skill-name">VFX & Compositing</div>
+      <div class="skill-desc">Particle systems, geometry nodes, procedural textures, and post-processing for stunning visual effects.</div>
+      <div class="skill-tags">
+        <span class="tag">Geo Nodes</span>
+        <span class="tag">Particles</span>
+        <span class="tag">Compositing</span>
+        <span class="tag">HDRI</span>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-bar-label"><span>Proficiency</span><span>85%</span></div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:85%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="projects-section" id="projects">
+  <div class="reveal">
+    <div class="section-label">03 // Projects</div>
+    <h2>Selected<br>Work</h2>
+  </div>
+  <div class="projects-grid">
+
+    <div class="project-card cad-vis reveal">
+      <div class="project-visual">
+        <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#2b7fff;stop-opacity:0.2"/>
+              <stop offset="100%" style="stop-color:#00d4ff;stop-opacity:0.05"/>
+            </linearGradient>
+          </defs>
+          <rect width="500" height="300" fill="#0d1117"/>
+          <!-- Grid -->
+          <g stroke="rgba(43,127,255,0.08)" stroke-width="0.5">
+            <line x1="0" y1="60" x2="500" y2="60"/><line x1="0" y1="120" x2="500" y2="120"/>
+            <line x1="0" y1="180" x2="500" y2="180"/><line x1="0" y1="240" x2="500" y2="240"/>
+            <line x1="100" y1="0" x2="100" y2="300"/><line x1="200" y1="0" x2="200" y2="300"/>
+            <line x1="300" y1="0" x2="300" y2="300"/><line x1="400" y1="0" x2="400" y2="300"/>
+          </g>
+          <!-- Isometric part -->
+          <g transform="translate(250,150)">
+            <!-- Main body iso -->
+            <polygon points="0,-80 80,-40 80,40 0,80 -80,40 -80,-40" fill="none" stroke="rgba(43,127,255,0.5)" stroke-width="1"/>
+            <polygon points="0,-80 80,-40 0,0 -80,-40" fill="rgba(43,127,255,0.08)" stroke="#2b7fff" stroke-width="1"/>
+            <polygon points="80,-40 80,40 0,80 0,0" fill="rgba(0,212,255,0.05)" stroke="#00d4ff" stroke-width="1"/>
+            <polygon points="0,0 0,80 -80,40 -80,-40" fill="rgba(43,127,255,0.04)" stroke="#2b7fff" stroke-width="0.5"/>
+            <!-- Hole cutout -->
+            <circle cx="0" cy="-40" r="18" fill="none" stroke="#2b7fff" stroke-width="1" stroke-dasharray="4,2"/>
+            <circle cx="0" cy="-40" r="8" fill="rgba(43,127,255,0.15)" stroke="#00d4ff" stroke-width="0.5"/>
+            <!-- Dimension lines -->
+            <line x1="-80" y1="60" x2="80" y2="60" stroke="rgba(43,127,255,0.3)" stroke-width="0.5" stroke-dasharray="3,2"/>
+            <text x="0" y="75" fill="rgba(43,127,255,0.5)" font-size="8" text-anchor="middle" font-family="monospace">Ø 160mm</text>
+          </g>
+          <!-- Corner markers -->
+          <text x="12" y="22" fill="rgba(43,127,255,0.4)" font-size="9" font-family="monospace">FRONT</text>
+          <text x="12" y="290" fill="rgba(43,127,255,0.3)" font-size="8" font-family="monospace">REV.A // DWG-0012</text>
+        </svg>
+      </div>
+      <div class="project-overlay">
+        <div class="project-cat">CAD Design</div>
+        <div class="project-name">Industrial Bracket Assembly</div>
+        <div class="project-about">Parametric SolidWorks assembly with GD&T tolerancing and full BOM for precision manufacturing.</div>
+      </div>
+    </div>
+
+    <div class="project-card blend-vis reveal">
+      <div class="project-visual">
+        <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+          <defs>
+            <radialGradient id="rg1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.4"/>
+              <stop offset="100%" style="stop-color:#080a1a;stop-opacity:0"/>
+            </radialGradient>
+          </defs>
+          <rect width="500" height="300" fill="#080a1a"/>
+          <ellipse cx="250" cy="150" rx="200" ry="150" fill="url(#rg1)"/>
+          <!-- Blender wireframe sphere feel -->
+          <g transform="translate(250,150)" fill="none">
+            <!-- Equator rings -->
+            <ellipse rx="100" ry="30" stroke="rgba(124,58,237,0.6)" stroke-width="0.8"/>
+            <ellipse rx="100" ry="55" stroke="rgba(124,58,237,0.4)" stroke-width="0.6"/>
+            <ellipse rx="70" ry="70" stroke="rgba(0,212,255,0.5)" stroke-width="1"/>
+            <ellipse rx="70" ry="25" stroke="rgba(0,212,255,0.3)" stroke-width="0.5"/>
+            <!-- Meridians -->
+            <ellipse rx="30" ry="70" stroke="rgba(124,58,237,0.4)" stroke-width="0.6"/>
+            <ellipse rx="60" ry="70" stroke="rgba(124,58,237,0.3)" stroke-width="0.5"/>
+            <!-- Highlight dot -->
+            <circle cx="-20" cy="-20" r="4" fill="rgba(255,255,255,0.8)"/>
+            <circle cx="-20" cy="-20" r="12" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          </g>
+          <text x="12" y="22" fill="rgba(124,58,237,0.6)" font-size="9" font-family="monospace">RENDER // EEVEE</text>
+          <text x="12" y="290" fill="rgba(124,58,237,0.4)" font-size="8" font-family="monospace">FRAME 0240 // 24FPS</text>
+          <text x="488" y="290" fill="rgba(0,212,255,0.4)" font-size="8" font-family="monospace" text-anchor="end">SAMPLES 512</text>
+        </svg>
+      </div>
+      <div class="project-overlay">
+        <div class="project-cat">Blender Animation</div>
+        <div class="project-name">Product Visualization Reel</div>
+        <div class="project-about">Photorealistic product animations with Cycles rendering, custom shader nodes, and cinematic lighting.</div>
+      </div>
+    </div>
+
+    <div class="project-card cam-vis reveal">
+      <div class="project-visual">
+        <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+          <rect width="500" height="300" fill="#0a1410"/>
+          <g stroke="rgba(0,200,100,0.06)" stroke-width="0.5">
+            <line x1="0" y1="50" x2="500" y2="50"/><line x1="0" y1="100" x2="500" y2="100"/>
+            <line x1="0" y1="150" x2="500" y2="150"/><line x1="0" y1="200" x2="500" y2="200"/>
+            <line x1="0" y1="250" x2="500" y2="250"/>
+            <line x1="100" y1="0" x2="100" y2="300"/><line x1="200" y1="0" x2="200" y2="300"/>
+            <line x1="300" y1="0" x2="300" y2="300"/><line x1="400" y1="0" x2="400" y2="300"/>
+          </g>
+          <!-- CNC toolpath spirals -->
+          <g transform="translate(250,150)" fill="none">
+            <path d="M0,0 Q40,-40 80,-20 Q120,0 110,50 Q100,100 60,110 Q20,120 -20,90 Q-60,60 -70,20 Q-80,-20 -50,-60 Q-20,-100 30,-90 Q80,-80 100,-50" stroke="rgba(0,200,100,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M0,0 Q20,-20 40,-10 Q60,0 55,25 Q50,50 30,55 Q10,60 -10,45 Q-30,30 -35,10 Q-40,-10 -25,-30 Q-10,-50 15,-45 Q40,-40 50,-25" stroke="rgba(0,200,100,0.5)" stroke-width="1"/>
+            <path d="M0,0 Q10,-10 20,-5 Q30,0 27,12 Q25,25 15,27 Q5,30 -5,22 Q-15,15 -17,5 Q-20,-5 -12,-15 Q-5,-25 7,-22 Q20,-20 25,-12" stroke="rgba(0,200,100,0.3)" stroke-width="0.8"/>
+            <!-- Tool tip -->
+            <circle cx="0" cy="0" r="4" fill="rgba(0,255,120,0.9)"/>
+            <circle cx="0" cy="0" r="10" fill="none" stroke="rgba(0,255,120,0.4)" stroke-width="1"/>
+          </g>
+          <text x="12" y="22" fill="rgba(0,200,100,0.6)" font-size="9" font-family="monospace">CAM // TOOLPATH</text>
+          <text x="12" y="290" fill="rgba(0,200,100,0.4)" font-size="8" font-family="monospace">SPINDLE: 8500 RPM // FEED: 600mm/min</text>
+        </svg>
+      </div>
+      <div class="project-overlay">
+        <div class="project-cat">CAM Programming</div>
+        <div class="project-name">5-Axis CNC Machining Strategy</div>
+        <div class="project-about">Optimized toolpath generation for complex aerospace-grade components using Fusion 360 CAM and Mastercam.</div>
+      </div>
+    </div>
+
+    <div class="project-card motion-vis reveal">
+      <div class="project-visual">
+        <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+          <defs>
+            <linearGradient id="mg1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#2b7fff;stop-opacity:0.6"/>
+              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.6"/>
+            </linearGradient>
+          </defs>
+          <rect width="500" height="300" fill="#0d0a1a"/>
+          <!-- NLA timeline bars -->
+          <g transform="translate(20,40)">
+            <text x="0" y="0" fill="rgba(124,58,237,0.5)" font-size="8" font-family="monospace">ACTION_STRIPS</text>
+            <rect x="0" y="15" width="100" height="14" fill="rgba(43,127,255,0.3)" rx="2"/>
+            <rect x="110" y="15" width="80" height="14" fill="rgba(43,127,255,0.2)" rx="2"/>
+            <rect x="200" y="15" width="140" height="14" fill="rgba(43,127,255,0.35)" rx="2"/>
+            <rect x="30" y="37" width="60" height="14" fill="rgba(124,58,237,0.35)" rx="2"/>
+            <rect x="100" y="37" width="120" height="14" fill="rgba(124,58,237,0.2)" rx="2"/>
+            <rect x="230" y="37" width="90" height="14" fill="rgba(124,58,237,0.3)" rx="2"/>
+            <rect x="0" y="59" width="40" height="14" fill="rgba(0,212,255,0.3)" rx="2"/>
+            <rect x="50" y="59" width="90" height="14" fill="rgba(0,212,255,0.2)" rx="2"/>
+            <rect x="150" y="59" width="60" height="14" fill="rgba(0,212,255,0.35)" rx="2"/>
+            <rect x="220" y="59" width="110" height="14" fill="rgba(0,212,255,0.2)" rx="2"/>
+            <!-- Playhead -->
+            <line x1="180" y1="-10" x2="180" y2="90" stroke="rgba(255,200,50,0.8)" stroke-width="1.5"/>
+            <polygon points="175,-10 185,-10 180,-4" fill="rgba(255,200,50,0.9)"/>
+            <text x="183" y="-1" fill="rgba(255,200,50,0.7)" font-size="8" font-family="monospace">F:180</text>
+          </g>
+          <!-- F-curve preview -->
+          <g transform="translate(20,180)">
+            <text x="0" y="0" fill="rgba(43,127,255,0.5)" font-size="8" font-family="monospace">F-CURVES</text>
+            <polyline points="0,40 40,38 80,30 100,10 130,5 160,8 200,20 240,35 280,38 320,35 360,20 400,15 440,18" fill="none" stroke="rgba(43,127,255,0.6)" stroke-width="1.5"/>
+            <polyline points="0,50 40,45 80,40 100,30 130,28 160,32 200,42 240,50 280,48 320,42 360,30 400,25 440,28" fill="none" stroke="rgba(0,212,255,0.4)" stroke-width="1"/>
+          </g>
+          <text x="12" y="22" fill="rgba(124,58,237,0.6)" font-size="9" font-family="monospace">NLA EDITOR // SCENE.001</text>
+        </svg>
+      </div>
+      <div class="project-overlay">
+        <div class="project-cat">3D Animation</div>
+        <div class="project-name">Mechanical Exploded View</div>
+        <div class="project-about">Animated exploded assembly views with NLA-driven motion paths for technical product presentations.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="reveal">
+    <div class="section-label">04 // Services</div>
+    <h2>What I<br>Deliver</h2>
+  </div>
+  <div class="services-list reveal">
+
+    <div class="service-row">
+      <div class="service-num">01</div>
+      <div class="service-name">CAD Modeling & Drafting</div>
+      <div class="service-desc">Parametric 3D models, technical drawings, GD&T annotations, and BOM generation ready for manufacturing.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+    <div class="service-row">
+      <div class="service-num">02</div>
+      <div class="service-name">CAM Programming</div>
+      <div class="service-desc">G-code programs and toolpath strategies for CNC milling, turning, and multi-axis machining operations.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+    <div class="service-row">
+      <div class="service-num">03</div>
+      <div class="service-name">Blender 3D Animation</div>
+      <div class="service-desc">Product animations, exploded assembly views, and cinematic renders that showcase engineering designs.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+    <div class="service-row">
+      <div class="service-num">04</div>
+      <div class="service-name">Product Visualization</div>
+      <div class="service-desc">Photorealistic still renders and marketing animations for product launches, presentations, and proposals.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+    <div class="service-row">
+      <div class="service-num">05</div>
+      <div class="service-name">Reverse Engineering</div>
+      <div class="service-desc">Point cloud processing, 3D scanning data conversion, and legacy part digitization for modern manufacturing.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+    <div class="service-row">
+      <div class="service-num">06</div>
+      <div class="service-name">Technical Consultation</div>
+      <div class="service-desc">DFM reviews, material selection, tolerance analysis, and manufacturing feasibility assessment.</div>
+      <div class="service-arr">→</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-info reveal">
+    <div class="section-label">05 // Contact</div>
+    <h2>Start a<br>Project</h2>
+    <p>Have a mechanical design challenge or need a striking 3D animation? Let's build something precise and visually compelling together.</p>
+    <div class="contact-links">
+      <a href="mailto:aungpyae@example.com" class="contact-link">
+        <span class="cl-icon">✉</span>
+        <div>
+          <div class="cl-label">Email</div>
+          <div class="cl-val">aungpyae@example.com</div>
+        </div>
+      </a>
+      <a href="#" class="contact-link">
+        <span class="cl-icon">💼</span>
+        <div>
+          <div class="cl-label">LinkedIn</div>
+          <div class="cl-val">linkedin.com/in/aungpyae</div>
+        </div>
+      </a>
+      <a href="#" class="contact-link">
+        <span class="cl-icon">🎨</span>
+        <div>
+          <div class="cl-label">Behance / Portfolio</div>
+          <div class="cl-val">behance.net/aungpyae</div>
+        </div>
+      </a>
+      <a href="#" class="contact-link">
+        <span class="cl-icon">▶</span>
+        <div>
+          <div class="cl-label">YouTube / Showreel</div>
+          <div class="cl-val">youtube.com/@aungpyae</div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div class="contact-form reveal">
+    <div class="form-row">
+      <label>Your Name</label>
+      <input type="text" placeholder="John Smith">
+    </div>
+    <div class="form-row">
+      <label>Email Address</label>
+      <input type="email" placeholder="john@company.com">
+    </div>
+    <div class="form-row">
+      <label>Project Type</label>
+      <input type="text" placeholder="CAD Design / Animation / Consultation">
+    </div>
+    <div class="form-row">
+      <label>Message</label>
+      <textarea rows="5" placeholder="Describe your project requirements..."></textarea>
+    </div>
+    <button class="form-submit">Send Message →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2025 Aung Pyae // CAD·CAM·BLENDER</div>
+  <div class="footer-links">
+    <a href="#">LinkedIn</a>
+    <a href="#">Behance</a>
+    <a href="#">GitHub</a>
+    <a href="#">YouTube</a>
+  </div>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+  document.querySelectorAll('a,button,.project-card,.skill-card,.service-row').forEach(el => {
+    el.addEventListener('mouseenter', () => { ring.style.width = '56px'; ring.style.height = '56px'; ring.style.borderColor = 'rgba(0,212,255,0.6)'; });
+    el.addEventListener('mouseleave', () => { ring.style.width = '36px'; ring.style.height = '36px'; ring.style.borderColor = 'rgba(43,127,255,0.5)'; });
+  });
+
+  // REVEAL ON SCROLL
+  const revEls = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => {
+          e.target.classList.add('visible');
+          // animate skill bars
+          e.target.querySelectorAll('.skill-bar-fill').forEach(b => b.classList.add('animated'));
+        }, 80 * (Array.from(revEls).indexOf(e.target) % 4));
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revEls.forEach(el => obs.observe(el));
+
+  // HERO 3D WIREFRAME CANVAS
+  (function() {
+    const canvas = document.getElementById('heroCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    function resize() {
+      W = canvas.offsetWidth; H = canvas.offsetHeight;
+      canvas.width = W; canvas.height = H;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Icosphere vertices (simplified)
+    const φ = (1 + Math.sqrt(5)) / 2;
+    const rawVerts = [
+      [-1,φ,0],[1,φ,0],[-1,-φ,0],[1,-φ,0],
+      [0,-1,φ],[0,1,φ],[0,-1,-φ],[0,1,-φ],
+      [φ,0,-1],[φ,0,1],[-φ,0,-1],[-φ,0,1]
+    ];
+    const verts = rawVerts.map(v => {
+      const len = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+      return [v[0]/len, v[1]/len, v[2]/len];
+    });
+    const edges = [
+      [0,1],[0,5],[0,7],[0,10],[0,11],
+      [1,5],[1,7],[1,8],[1,9],
+      [2,3],[2,6],[2,10],[2,11],[2,4],
+      [3,4],[3,6],[3,8],[3,9],
+      [4,5],[4,9],[4,11],
+      [5,9],[5,11],
+      [6,7],[6,8],[6,10],
+      [7,8],[7,10],
+      [8,9],[10,11]
+    ];
+
+    let t = 0;
+    // Add extra floating particles
+    const particles = Array.from({length:24},()=>({
+      x: Math.random()*2-1, y: Math.random()*2-1, z: Math.random()*2-1,
+      vx: (Math.random()-0.5)*0.003, vy: (Math.random()-0.5)*0.003, vz: (Math.random()-0.5)*0.003
+    }));
+
+    function project(v, cx, cy, scale) {
+      const z = v[2] + 3;
+      const px = cx + (v[0] / z) * scale;
+      const py = cy + (v[1] / z) * scale;
+      return [px, py, z];
+    }
+    function rotX(v,a){return[v[0],v[1]*Math.cos(a)-v[2]*Math.sin(a),v[1]*Math.sin(a)+v[2]*Math.cos(a)];}
+    function rotY(v,a){return[v[0]*Math.cos(a)+v[2]*Math.sin(a),v[1],-v[0]*Math.sin(a)+v[2]*Math.cos(a)];}
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      const cx = W/2, cy = H/2, scale = Math.min(W,H) * 0.38;
+      t += 0.006;
+
+      // Rotate all verts
+      const rv = verts.map(v => rotY(rotX(v, t*0.4), t));
+
+      // Draw grid circle
+      ctx.beginPath();
+      ctx.arc(cx, cy, scale * 0.95, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(43,127,255,0.06)';
+      ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, scale * 0.6, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(43,127,255,0.04)';
+      ctx.stroke();
+
+      // Draw edges
+      edges.forEach(([a,b]) => {
+        const pa = project(rv[a], cx, cy, scale);
+        const pb = project(rv[b], cx, cy, scale);
+        const alpha = Math.min(1, Math.max(0, (rv[a][2] + rv[b][2] + 2) / 4)) * 0.7;
+        ctx.beginPath();
+        ctx.moveTo(pa[0], pa[1]);
+        ctx.lineTo(pb[0], pb[1]);
+        ctx.strokeStyle = `rgba(43,127,255,${alpha})`;
+        ctx.lineWidth = 0.8; ctx.stroke();
+      });
+
+      // Draw vertices
+      rv.forEach(v => {
+        const p = project(v, cx, cy, scale);
+        const a = Math.min(1, (v[2]+1)/2) * 0.9;
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 2.5, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,212,255,${a})`;
+        ctx.fill();
+      });
+
+      // Floating particles
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
+        ['x','y','z'].forEach(k => { if(Math.abs(p[k])>1.5) p['v'+k]*=-1; });
+        const rp = rotY(rotX([p.x,p.y,p.z], t*0.4), t);
+        const pp = project(rp, cx, cy, scale);
+        ctx.beginPath();
+        ctx.arc(pp[0], pp[1], 1, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(124,58,237,0.5)'; ctx.fill();
+      });
+
+      // Crosshair center
+      ctx.beginPath();
+      ctx.moveTo(cx-12, cy); ctx.lineTo(cx+12, cy);
+      ctx.moveTo(cx, cy-12); ctx.lineTo(cx, cy+12);
+      ctx.strokeStyle = 'rgba(43,127,255,0.25)'; ctx.lineWidth = 0.5; ctx.stroke();
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+</script>
+</body>
+</html>
